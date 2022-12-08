@@ -3,9 +3,10 @@ module Slot.Games.QueenBee.Game
 open FSharpPlus.Data
 open Microsoft.FSharp.Core
 open FSharpPlus
+open Common
 module Level =
-    let width = 5
-    let height = 3
+    let width,height = 5,3
+    //full combo's RTP = 0.9585549701566001
     let l1 = [
         [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
         [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3|];
@@ -13,7 +14,8 @@ module Level =
         [|3;5;10;4;8;2;4;9;2;1;11;2;8;6;0;3;6;5;2;6;4;1;7;2;5;3;1;7;2;6;4;1;8;3;6;0;1|];
         [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
-
+    
+    //full combo's RTP = 0.9339259632022288
     let l2 = [
           [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
           [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3;0;0;0|];
@@ -22,6 +24,7 @@ module Level =
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|] 
     ]
 
+    //full combo's RTP = 0.9057785266780308
     let l3 = [
           [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
           [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3;0;0;0;0;0;0;0|];
@@ -30,149 +33,113 @@ module Level =
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
     
-    Common.Level.checkLevel l1 width height
-    Common.Level.checkLevel l2 width height
-    Common.Level.checkLevel l3 width height
+    Level.checkLevel l1 width height
+    Level.checkLevel l2 width height
+    Level.checkLevel l3 width height
     
-    let queenBeeSpin<'a> (level: 'a[] list)  (random :int -> int) = Common.Level.randomSpin level height random
-    let queenBeeSpinLevel1 (random :int -> int) = queenBeeSpin l1 random
-    let queenBeeSpinLevel2 (random :int -> int) = queenBeeSpin l2 random
-    let queenBeeSpinLevel3 (random :int -> int) = queenBeeSpin l3 random
+    let private queenBeeSpin = Level.randomSpin height
+    let spinLevel1,spinLevel2,spinLevel3  = queenBeeSpin l1,queenBeeSpin l2,queenBeeSpin l3
+    
 module PayTable =
-    let Ten = 0
-    let Jack = 1
-    let Queen = 2
-    let King = 3
-    let Ace = 4
-    let Daisy = 5
-    let Flower =6
-    let BeeHives = 7
-    let SkinnyBee = 8
-    let FatBee = 9
-    let Scatter = 10
-    let Wild = 11
+    let Ten,Jack,Queen,King,Ace = 0,1,2,3,4
+    let Daisy,Flower,BeeHives,SkinnyBee,FatBee= 5,6,7,8,9
+    let Scatter,Wild = 10,11
     
-    let fatBee    = Map [(5,5000);(4,500);(3,100);(2,10);(1,2)]
-    let skinnyBee = Map [(5,2500);(4,250);(3,50);(2,5)]
-    let beeHives =  Map [(5,1000);(4,100);(3,20);(2,3)]
-    let flower   =  Map [(5,1000);(4,100);(3,20);(2,3)]
-    let daisy = Map [(5,500);(4,30);(3,10)]
-    let ace   = Map [(5,300);(4,25);(3,5)]
-    let king  = Map [(5,200);(4,20);(3,5)]
-    let queen = Map [(5,200);(4,20);(3,5)]
-    let jack  = Map [(5,100);(4,15);(3,5)]
-    let ten   = Map [(5,100);(4,15);(3,5)]
-
+    let plainPayTable = Map[
+        FatBee,Map [(5,5000);(4,500);(3,100);(2,10);(1,2)];
+        SkinnyBee, Map [(5,2500);(4,250);(3,50);(2,5)];
+        BeeHives, Map [(5,1000);(4,100);(3,20);(2,3)];
+        Flower, Map [(5,1000);(4,100);(3,20);(2,3)];
+        Daisy, Map [(5,500);(4,30);(3,10)];
+        Ace, Map [(5,300);(4,25);(3,5)];
+        King, Map [(5,200);(4,20);(3,5)];
+        Queen, Map [(5,200);(4,20);(3,5)];
+        Jack, Map [(5,100);(4,15);(3,5)];
+        Ten, Map [(5,100);(4,15);(3,5)]
+    ]
+   
     let scatter = Map [(5,100);(4,10);(3,5);(2,1)]
 
-    let plainPayTable = Map[
-        FatBee,fatBee;
-        SkinnyBee, skinnyBee;
-        BeeHives, beeHives;
-        Flower, flower;
-        Daisy, daisy;
-        Ace, ace;
-        King, king;
-        Queen, queen;
-        Jack, jack;
-        Ten, ten
-    ]
-    let queenBeeScatterWin  = Common.PayTable.simpleLookup scatter
-    let queenBeePlainWin  = Common.PayTable.nestedLookup plainPayTable
-    
+    let multiply subst times value = if subst then value*times else value
+    let calScatterWin (s,r)  =
+        PayTable.simpleLookup s scatter |>> multiply r 2
+    let calPlainWin (s,c,r)  =
+        PayTable.nestedLookup s c plainPayTable|>> multiply r 2
     let queenBeeIsWild e = e = Wild
     let queenBeeIsScatter e = e = Scatter
 
 module Line =
-    let l1 = [|1; 1; 1; 1; 1|]
-    let l2 = [|0; 0; 0; 0; 0|]
-    let l3 = [|2; 2; 2; 2; 2|]  
-    let l4 = [|0; 1; 2; 1; 0|]
-    let l5 = [|2; 1; 0; 1; 2|]
-    let l6 = [|0; 0; 1; 0; 0|]
-    let l7 = [|2; 2; 1; 2; 2|]
-    let l8 = [|1; 2; 2; 2; 1|]
-    let l9 = [|1; 0; 0; 0; 1|]
+    let l1 = Seq.ofList [1; 1; 1; 1; 1]
+    let l2 = Seq.ofList [0; 0; 0; 0; 0]
+    let l3 = Seq.ofList [2; 2; 2; 2; 2]                     
+    let l4 = Seq.ofList [0; 1; 2; 1; 0]
+    let l5 = Seq.ofList [2; 1; 0; 1; 2]
+    let l6 = Seq.ofList [0; 0; 1; 0; 0]
+    let l7 = Seq.ofList [2; 2; 1; 2; 2]
+    let l8 = Seq.ofList [1; 2; 2; 2; 1]
+    let l9 = Seq.ofList [1; 0; 0; 0; 1]
     
-    let  allLines = [|l1; l2; l3; l4; l5; l6; l7; l8; l9|]
-    
-    let queenBeePayLines<'a> (snapshot:'a[][])  = Common.Line.payLines allLines snapshot
-    
-    let queenBeeCountAllLineTwice = Common.Line.countAllLineTwice PayTable.queenBeeIsWild
-    
-    let queenBeeCountScatter snapshot = Common.Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
+    let  allLines = Seq.ofList [l1; l2; l3; l4; l5; l6; l7; l8; l9]
+    let totalLines = 9
+    let queenBeePayLines  = Line.payLines allLines
+    let queenBeeCountAllLineTwice = Line.countAllLineTwice Level.width PayTable.queenBeeIsWild
+    let queenBeeCountScatter snapshot =
+        Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
+
 module Core =
+   
+    type LineResultTwice<'a> = seq<LineResult<'a> * LineResult<'a>>
     
-    type LineResultTwice<'a> = seq<Common.LineResult<'a> option * Common.LineResult<'a> option>
-    type Result<'a> = {
-        snapshot: 'a[][]
-        lines: 'a[][]
-        linesResult: LineResultTwice<'a>
-        plainWin: seq<int option * int option>
-        scatterResult:(int*bool) option *  (int*bool) option
-        scatterWin: int option * int option
+    type ScatterResult = {
+        result:(int*bool) option *  (int*bool) option
+        win: int option * int option
         multiplier:int
     }
-    let spinLevel1 (random :int -> int) =
-        let ss = Level.queenBeeSpinLevel1(random)
- 
-        let payLines = Line.queenBeePayLines ss
-        
-        let len = payLines.Length
-        
-        let countAllLines = Line.queenBeeCountAllLineTwice payLines |> Seq.ofArray
-        
-        let plainWin = seq {
-            for line in countAllLines do
-                let l,r = line
-                let lm = monad {
-                    let! s,c,w = l
-                    let! m = PayTable.queenBeePlainWin s c
-                    return if w then m*2 else m
-                }
-                let rm = monad {
-                    let! s,c,w = r
-                    let! m = PayTable.queenBeePlainWin s c
-                    return if w then m*2 else m
-                }
-                yield lm,rm
-        }
-        let countScatter = Line.queenBeeCountScatter ss
-        let scatterWin =
-            let (sl, sr) = countScatter
-            
-            let slm = monad {
-                let! c,w = sl
-                let! m = PayTable.queenBeeScatterWin c
-                return if w then m*2 else m
-            }
-                
-            let srm =monad {
-                let! c,w = sl
-                let! m = PayTable.queenBeeScatterWin c
-                return if w then m*2 else m
-            }
-            slm,srm
-        
-        let folder s e= s + e*len 
-        
-        let slm,srm = scatterWin
-        let mslm =  Option.fold folder 0 slm
-        let msrm =  Option.fold folder 0 srm
-        
-        let folder2 s e =
-            let l,r = e
-            let ml =  Option.fold folder 0 l
-            let mr =  Option.fold folder 0 r
-            ml+mr+s
-            
-        let pwm = Seq.fold folder2 0 plainWin
+    
+    type PlainResult<'a> = {
+        result: LineResultTwice<'a>
+        win: seq<int option * int option>
+        multiplier:int
+    }
+    
+    type Result<'a> = {
+        snapshot: 'a[][]
+        linesOfSymbol: seq<seq<'a>>
+        scatter:ScatterResult
+        plain:PlainResult<'a>
+    }
+    
+    let sumL2R (l,r) =
+        let f= Option.fold (fun s e-> s+ e) 0
+        f l + f r
+    
+    let plainResult (linesOfSymbol:seq<seq<int>>):PlainResult<int> = 
+        let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol
+        let plainWin = seq { for l,r in countAllLines ->
+                                l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin }       
         {
-            snapshot = ss
-            lines = payLines
-            linesResult = countAllLines
-            plainWin = plainWin
-            scatterResult = countScatter
-            scatterWin = scatterWin
-            multiplier = mslm + msrm + pwm
+            result = countAllLines
+            win = plainWin
+            multiplier = Seq.fold (fun s e -> s + sumL2R e) 0 plainWin
         }
+        
+    let scatterResult (snapshot:int[][]):ScatterResult =
+        let countScatter = Line.queenBeeCountScatter snapshot
+        let l,r = countScatter
+        let scatterWin = l >>= PayTable.calScatterWin,r >>= PayTable.calScatterWin
+        {
+            result = countScatter
+            win = scatterWin
+            multiplier = sumL2R scatterWin
+        }
+      
+    let computeResult(snapshot:int[][]) =
+        let linesOfSymbol = Line.queenBeePayLines snapshot
+        {
+            snapshot = snapshot
+            linesOfSymbol = linesOfSymbol
+            scatter= scatterResult snapshot
+            plain = plainResult linesOfSymbol
+        }
+    let randomSpinLevel1 (random :int -> int) =
+        Level.spinLevel1 random |> computeResult

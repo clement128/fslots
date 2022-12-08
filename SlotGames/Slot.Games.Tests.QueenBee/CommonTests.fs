@@ -17,8 +17,8 @@ let pt2 = Map[(9, pt1)]
 
 [<Test>]
 let payTableTest1 () =
-    let lookup =
-        Common.PayTable.simpleLookup pt1
+    let lookup s =
+        Common.PayTable.simpleLookup s pt1
 
     let r1 = lookup 5
     Assert.AreEqual(Some(100), r1)
@@ -27,8 +27,8 @@ let payTableTest1 () =
 
 [<Test>]
 let payTableTest2 () =
-    let lookup =
-        Common.PayTable.nestedLookup pt2
+    let lookup s c =
+        Common.PayTable.nestedLookup s c pt2
 
     let r1 = lookup 9 5
     Assert.AreEqual(Some(100), r1)
@@ -76,8 +76,6 @@ let safeRings1 () =
     Assert.AreEqual([3;4;0;1;2],r4)
     
 
-
-
 [<Test>]
 let fakeRandomSeq1 () =
     let f = Common.Level.fakeRandomSeq [3;4;5]
@@ -107,7 +105,7 @@ let randomSpin () =
         [|10;11;12|]
     ]
     let random = Common.Level.fakeRandomSeq [1;4;0]
-    let r = Common.Level.randomSpin level 2 random
+    let r = Common.Level.randomSpin 2 level random
     let e = [|
         [|2;3|]
         [|9;5|]
@@ -174,40 +172,40 @@ let countLineOnce () =
     
 [<Test>]
 let countLineTwice () =
-    let cf = Common.Line.countLineTwice(equal 3)
+    let cf w = Common.Line.countLineTwice w (equal 3)
     
-    let r1 = cf [|2;3;4|]
+    let r1 = cf 3 [|2;3;4|]
     Assert.AreEqual((Some(2,2,true),Some(4,2,true)),r1)
     
-    let r2 = cf [||]
+    let r2 = cf 3 [||]
     Assert.AreEqual((None,None),r2)
     
-    let r3 = cf [|3;3;3|]
+    let r3 = cf 3 [|3;3;3|]
     Assert.AreEqual((None,None),r3)
     
-    let r4 = cf [|4;3;4;5;4|]
+    let r4 = cf 5 [|4;3;4;5;4|]
     Assert.AreEqual((Some(4,3,true),Some(4,1,false)), r4)
     
-    let r4 = cf [|4;3;3;3;4|]
-    Assert.AreEqual((Some(4,5,true),Some(4,5,true)), r4)
+    let r4 = cf 5 [|4;3;3;3;4|]
+    Assert.AreEqual((Some(4,5,true),None), r4)
     
-    let r5 = cf [|4;5;3;3;4|]
+    let r5 = cf 5 [|4;5;3;3;4|]
     Assert.AreEqual((Some(4,1,false),Some(4,3,true)), r5)
     
     
 [<Test>]
 let countAllLineTwice () =
-    let cf = Common.Line.countAllLineTwice(equal 4)
-    let lines = [|
-            [|2;3;9;4;3|]
-            [|7;2;0;2;1|]
-    |]
+    let cf w = Common.Line.countAllLineTwice w (equal 4)
+    let lines = Seq.ofList [
+            Seq.ofList [2;3;9;4;3]
+            Seq.ofList [7;2;0;2;1]
+    ]
     let er = [|
-        0,(Some(2,1,false),Some(3,2,true))
-        1,(Some(7,1,false),Some(1,1,false))
+        Some(2,1,false),Some(3,2,true)
+        Some(7,1,false),Some(1,1,false)
     |]
     
-    let rr = cf lines
+    let rr = cf 5 lines
     Assert.AreEqual(er, rr)
     
     
@@ -261,3 +259,24 @@ let countTest4 () =
    let r = Common.Line.countScatter ss  (equal 3) (equal 9)
    let expected = None, Some(4,true)
    Assert.AreEqual(expected, r)
+   
+   
+[<Test>]
+let testGenStartIdx1 () =
+    let maxIdx = [3;3]
+    let r = Common.Rtp.genStartIdx maxIdx
+    let er = [[0; 0]; [0; 1]; [0; 2]; [1; 0]; [1; 1]; [1; 2]; [2; 0]; [2; 1]; [2; 2]]
+    Assert.AreEqual(er,r)
+    Assert.AreEqual(9, Seq.toList(r).Length)
+    
+ 
+[<Test>]
+let genSlice () =
+    let r = Common.Rtp.genSlice [3;4;5] [6;5;7] 3
+    let s1 = [3;4;5] |>List.toSeq
+    let s2 = [4;0;1] |>List.toSeq
+    let s3 = [5;6;0] |>List.toSeq
+    let er = Seq.ofList [s1;s2;s3]
+    Assert.AreEqual(er,r)
+    
+    
