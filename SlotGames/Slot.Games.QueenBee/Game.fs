@@ -1,12 +1,11 @@
 module Slot.Games.QueenBee.Game
 
-open FSharpPlus.Data
-open Microsoft.FSharp.Core
 open FSharpPlus
 open Common
 module Level =
     let width,height = 5,3
-    //full combo's RTP = 0.9585549701566001
+    
+    //RTP = 0.9585549701566001
     let l1 = [
         [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
         [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3|];
@@ -15,7 +14,7 @@ module Level =
         [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
     
-    //full combo's RTP = 0.9339259632022288
+    //RTP = 0.9339259632022288
     let l2 = [
           [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
           [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3;0;0;0|];
@@ -24,7 +23,7 @@ module Level =
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|] 
     ]
 
-    //full combo's RTP = 0.9057785266780308
+    //RTP = 0.9057785266780308
     let l3 = [
           [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
           [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3;0;0;0;0;0;0;0|];
@@ -69,17 +68,17 @@ module PayTable =
     let queenBeeIsScatter e = e = Scatter
 
 module Line =
-    let l1 = Seq.ofList [1; 1; 1; 1; 1]
-    let l2 = Seq.ofList [0; 0; 0; 0; 0]
-    let l3 = Seq.ofList [2; 2; 2; 2; 2]                     
-    let l4 = Seq.ofList [0; 1; 2; 1; 0]
-    let l5 = Seq.ofList [2; 1; 0; 1; 2]
-    let l6 = Seq.ofList [0; 0; 1; 0; 0]
-    let l7 = Seq.ofList [2; 2; 1; 2; 2]
-    let l8 = Seq.ofList [1; 2; 2; 2; 1]
-    let l9 = Seq.ofList [1; 0; 0; 0; 1]
+    let l1 = [1; 1; 1; 1; 1]
+    let l2 = [0; 0; 0; 0; 0]
+    let l3 = [2; 2; 2; 2; 2]                     
+    let l4 = [0; 1; 2; 1; 0]
+    let l5 = [2; 1; 0; 1; 2]
+    let l6 = [0; 0; 1; 0; 0]
+    let l7 = [2; 2; 1; 2; 2]
+    let l8 = [1; 2; 2; 2; 1]
+    let l9 = [1; 0; 0; 0; 1]
     
-    let  allLines = Seq.ofList [l1; l2; l3; l4; l5; l6; l7; l8; l9]
+    let allLines = [l1; l2; l3; l4; l5; l6; l7; l8; l9]
     let totalLines = 9
     let queenBeePayLines  = Line.payLines allLines
     let queenBeeCountAllLineTwice = Line.countAllLineTwice Level.width PayTable.queenBeeIsWild
@@ -88,7 +87,7 @@ module Line =
 
 module Core =
    
-    type LineResultTwice<'a> = seq<LineResult<'a> * LineResult<'a>>
+    type LineResultTwice<'a> = list<LineResult<'a> * LineResult<'a>>
     
     type ScatterResult = {
         result:(int*bool) option *  (int*bool) option
@@ -98,13 +97,13 @@ module Core =
     
     type PlainResult<'a> = {
         result: LineResultTwice<'a>
-        win: seq<int option * int option>
+        win: list<int option * int option>
         multiplier:int
     }
     
     type Result<'a> = {
         snapshot: 'a[][]
-        linesOfSymbol: seq<seq<'a>>
+        linesOfSymbol: list<list<'a>>
         scatter:ScatterResult
         plain:PlainResult<'a>
     }
@@ -113,10 +112,10 @@ module Core =
         let f= Option.fold (fun s e-> s+ e) 0
         f l + f r
     
-    let plainResult (linesOfSymbol:seq<seq<int>>):PlainResult<int> = 
+    let plainResult (linesOfSymbol:list<list<int>>):PlainResult<int> = 
         let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol
-        let plainWin = seq { for l,r in countAllLines ->
-                                l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin }       
+        let plainWin =  [for l,r in countAllLines ->
+                                l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin]       
         {
             result = countAllLines
             win = plainWin
